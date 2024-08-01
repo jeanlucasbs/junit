@@ -1,16 +1,16 @@
 package com.jeanlucasbs.api_rest.controllers;
 
 
+import com.jeanlucasbs.api_rest.domain.User;
 import com.jeanlucasbs.api_rest.dto.UserDTO;
 import com.jeanlucasbs.api_rest.services.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -35,5 +35,24 @@ public class UserController {
                 .body(userService.findAll()
                                  .stream()
                                  .map(x -> mapper.map(x, UserDTO.class)).toList());
+    }
+
+    @PostMapping
+    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO userDTO){
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(userService.createUser(userDTO).getId()).toUri();
+        return ResponseEntity.created(uri).build();
+    }
+
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<UserDTO> updateUser(@RequestBody UserDTO userDTO, @PathVariable Integer id){
+        userDTO.setId(id);
+        User newUser = userService.updateUser(userDTO);
+        return ResponseEntity.ok().body(mapper.map(newUser, UserDTO.class));
+    }
+
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<UserDTO> deleteUser(@PathVariable Integer id){
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
